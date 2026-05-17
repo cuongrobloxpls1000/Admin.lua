@@ -1,0 +1,159 @@
+local Players = game:GetService("Players")
+local UIS = game:GetService("UserInputService")
+local LocalPlayer = Players.LocalPlayer
+
+-- GUI
+local ScreenGui = Instance.new("ScreenGui")
+ScreenGui.Parent = game.CoreGui
+
+-- Nút tròn vàng
+local OpenButton = Instance.new("TextButton")
+OpenButton.Parent = ScreenGui
+OpenButton.Size = UDim2.new(0,60,0,60)
+OpenButton.Position = UDim2.new(0.08,0,0.5,0)
+OpenButton.Text = "⚡"
+OpenButton.TextScaled = true
+OpenButton.BackgroundColor3 = Color3.fromRGB(255,215,0)
+OpenButton.TextColor3 = Color3.new(0,0,0)
+OpenButton.BorderSizePixel = 0
+
+local corner = Instance.new("UICorner")
+corner.CornerRadius = UDim.new(1,0)
+corner.Parent = OpenButton
+
+-- Khung chính
+local Frame = Instance.new("Frame")
+Frame.Parent = ScreenGui
+Frame.Size = UDim2.new(0,320,0,280)
+Frame.Position = UDim2.new(0.25,0,0.2,0)
+Frame.BackgroundColor3 = Color3.fromRGB(40,40,40)
+Frame.Visible = false
+
+local frameCorner = Instance.new("UICorner")
+frameCorner.Parent = Frame
+
+-- Tiêu đề
+local Title = Instance.new("TextLabel")
+Title.Parent = Frame
+Title.Size = UDim2.new(1,-40,0,35)
+Title.Text = "ADMIN MINI"
+Title.TextScaled = true
+Title.BackgroundTransparency = 1
+Title.TextColor3 = Color3.new(1,1,1)
+
+-- Nút X
+local Close = Instance.new("TextButton")
+Close.Parent = Frame
+Close.Size = UDim2.new(0,35,0,35)
+Close.Position = UDim2.new(1,-35,0,0)
+Close.Text = "X"
+Close.TextScaled = true
+Close.BackgroundColor3 = Color3.fromRGB(255,0,0)
+
+-- Ô tìm kiếm
+local SearchBox = Instance.new("TextBox")
+SearchBox.Parent = Frame
+SearchBox.Size = UDim2.new(0.9,0,0,35)
+SearchBox.Position = UDim2.new(0.05,0,0.18,0)
+SearchBox.PlaceholderText = "Nhập tên người chơi..."
+SearchBox.Text = ""
+SearchBox.TextScaled = true
+
+-- Nút teleport
+local TPButton = Instance.new("TextButton")
+TPButton.Parent = Frame
+TPButton.Size = UDim2.new(0.9,0,0,35)
+TPButton.Position = UDim2.new(0.05,0,0.33,0)
+TPButton.Text = "XÁC NHẬN DỊCH CHUYỂN"
+TPButton.TextScaled = true
+TPButton.BackgroundColor3 = Color3.fromRGB(0,170,255)
+
+-- Nút nhảy vô tận
+local InfiniteJump = false
+
+local JumpButton = Instance.new("TextButton")
+JumpButton.Parent = Frame
+JumpButton.Size = UDim2.new(0.9,0,0,40)
+JumpButton.Position = UDim2.new(0.05,0,0.55,0)
+JumpButton.Text = "NHẢY VÔ TẬN : OFF"
+JumpButton.TextScaled = true
+JumpButton.BackgroundColor3 = Color3.fromRGB(0,255,100)
+
+-- Mở GUI
+OpenButton.MouseButton1Click:Connect(function()
+	Frame.Visible = true
+	OpenButton.Visible = false
+end)
+
+-- Đóng GUI
+Close.MouseButton1Click:Connect(function()
+	Frame.Visible = false
+	OpenButton.Visible = true
+end)
+
+-- Teleport
+TPButton.MouseButton1Click:Connect(function()
+	local targetName = SearchBox.Text:lower()
+
+	for _,plr in pairs(Players:GetPlayers()) do
+		if string.find(plr.Name:lower(), targetName) then
+			if plr.Character and plr.Character:FindFirstChild("HumanoidRootPart") then
+				LocalPlayer.Character.HumanoidRootPart.CFrame =
+				plr.Character.HumanoidRootPart.CFrame
+			end
+			break
+		end
+	end
+end)
+
+-- Infinite Jump
+JumpButton.MouseButton1Click:Connect(function()
+	InfiniteJump = not InfiniteJump
+	
+	if InfiniteJump then
+		JumpButton.Text = "NHẢY VÔ TẬN : ON"
+	else
+		JumpButton.Text = "NHẢY VÔ TẬN : OFF"
+	end
+end)
+
+UIS.JumpRequest:Connect(function()
+	if InfiniteJump then
+		local hum = LocalPlayer.Character:FindFirstChildOfClass("Humanoid")
+		if hum then
+			hum:ChangeState("Jumping")
+		end
+	end
+end)
+
+-- Hàm kéo GUI
+local function dragify(obj)
+	local dragging = false
+	local dragStart
+	local startPos
+
+	obj.InputBegan:Connect(function(input)
+		if input.UserInputType == Enum.UserInputType.Touch then
+			dragging = true
+			dragStart = input.Position
+			startPos = obj.Position
+		end
+	end)
+
+	obj.InputChanged:Connect(function(input)
+		if dragging and input.UserInputType == Enum.UserInputType.Touch then
+			local delta = input.Position - dragStart
+			obj.Position = UDim2.new(
+				startPos.X.Scale,startPos.X.Offset + delta.X,
+				startPos.Y.Scale,startPos.Y.Offset + delta.Y
+			)
+		end
+	end)
+
+	obj.InputEnded:Connect(function()
+		dragging = false
+	end)
+end
+
+dragify(OpenButton)
+dragify(Frame)
